@@ -3,18 +3,19 @@ import pika
 import os
 
 class Publisher:
-    HOST = os.getenv('AMQP_HOST', 'rabbitmq')
-    VIRTUAL_HOST = '/'
-    EXCHANGE='robot-shop'
-    TYPE='direct'
-    ROUTING_KEY = 'orders'
-
-    def __init__(self, logger):
+    def __init__(self, host, user, password, logger):
+        self.HOST = host
+        self.USER = user
+        self.password = password
+        self.VIRTUAL_HOST = '/'
+        self.EXCHANGE='robot-shop'
+        self.TYPE='direct'
+        self.ROUTING_KEY = 'orders'
         self._logger = logger
         self._params = pika.connection.ConnectionParameters(
             host=self.HOST,
             virtual_host=self.VIRTUAL_HOST,
-            credentials=pika.credentials.PlainCredentials('guest', 'guest'))
+            credentials=pika.credentials.PlainCredentials(self.USER, self.password))
         self._conn = None
         self._channel = None
 
@@ -32,6 +33,14 @@ class Publisher:
                                     body=json.dumps(msg).encode())
         self._logger.info('message sent')
 
+    def check_connection(self):
+        try:
+            conn = pika.BlockingConnection(self._params)
+            conn.close()
+            return "OK", True
+        except Exception as e:
+            return f"RabbitMQ unreachable: {e}", False
+            
     #Publish msg, reconnecting if necessary.
     def publish(self, msg, headers):
         if self._channel is None or self._channel.is_closed or self._conn is None or self._conn.is_closed:
@@ -47,4 +56,3 @@ class Publisher:
         if self._conn and self._conn.is_open:
             self._logger.info('closing queue connection')
             self._conn.close()
-
