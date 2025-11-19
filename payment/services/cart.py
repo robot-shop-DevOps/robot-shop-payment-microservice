@@ -13,6 +13,8 @@ class CartService:
                 return "Cart microservice not ready", 503
         except Exception as e:
             return e, 503
+        
+        return "OK", 200
 
     def delete_cart(self, user_id):
         try:

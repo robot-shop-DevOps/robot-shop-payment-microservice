@@ -14,6 +14,8 @@ class UserService:
                 return "User microservice not ready", 503
         except Exception as e:
             return e, 503
+        
+        return "OK", 200
 
     def user_exists(self, user_id):
         try:
