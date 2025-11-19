@@ -69,7 +69,7 @@ jobs:
 
       - name: Build image with Buildah
         run: |
-          buildah build -t ${{ env.IMAGE_NAME }} ./payment
+          buildah build -t ${{ env.IMAGE_NAME }} .
           buildah tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_URL }}/robot-shop/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.IMAGE_TAG }}
 
       - name: Push image with Buildah
