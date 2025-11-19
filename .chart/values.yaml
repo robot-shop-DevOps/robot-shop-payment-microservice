@@ -71,7 +71,7 @@ deployment:
       readinessProbe:
         httpGet:
           path: /health
-          port: 8326
+          port: 8426
         initialDelaySeconds: 5
         periodSeconds: 10
         failureThreshold: 3
@@ -79,7 +79,7 @@ deployment:
       livenessProbe:
         httpGet:
           path: /health
-          port: 8326
+          port: 8426
         initialDelaySeconds: 15
         periodSeconds: 20
         failureThreshold: 3
