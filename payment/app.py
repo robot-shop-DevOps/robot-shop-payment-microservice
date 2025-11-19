@@ -1,14 +1,13 @@
 from flask import Flask, Response
 import os
-import logging
 
-from routes.payment import init_routes
-from services.payment import PaymentService
-from services.user import UserService
-from services.cart import CartService
-from services.queue import QueueService
-from rabbitmq.rabbitmq import Publisher
-from utils.logger import Logger
+from payment.routes.payment import init_routes
+from payment.services.payment import PaymentService
+from payment.services.user import UserService
+from payment.services.cart import CartService
+from payment.services.queue import QueueService
+from payment.rabbitmq.rabbitmq import Publisher
+from payment.utils.logger import Logger
 
 app = Flask(__name__)
 app.logger = Logger().create_logger()
