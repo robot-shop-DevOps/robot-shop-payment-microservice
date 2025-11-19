@@ -6,4 +6,4 @@ COPY payment/ ./payment
 
 RUN pip install --no-cache-dir -r payment/requirements.txt
 
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8426", "--workers=2", "--threads=4"]
+CMD ["gunicorn", "payment.app:app", "--bind", "0.0.0.0:8426", "--workers=2", "--threads=4"]
