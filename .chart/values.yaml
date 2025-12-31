@@ -1,0 +1,96 @@
+labels:
+  app: Payment
+  project: Robot-Shop
+  technology: Python
+  environment: default 
+
+deployment:
+  name: payment
+
+  replicas: 1
+
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+
+  pod:
+    nodeSelector:
+      project: Robot-Shop
+
+    containers:  
+    - name: payment
+
+      image: ${IMAGE}  # <-- placeholder
+
+      imagePullPolicy: Always
+
+      ports:
+      - containerPort: 8426
+
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "128Mi"
+
+        limits:
+          cpu: "200m"
+          memory: "512Mi"
+
+      env:
+      - name: PAYMENT_SERVER_PORT 
+        value: "8426"
+
+      - name: CART_HOST  
+        value: cart.cart-microservice.svc.cluster.local
+
+      - name: CART_PORT 
+        value: "8326"
+
+      - name: USER_HOST  
+        value: user.user-microservice.svc.cluster.local
+
+      - name: USER_PORT
+        value: "8126"
+       
+      - name: AMQP_HOST 
+        value: rabbitmq-service.rabbitmq.svc.cluster.local
+
+      - name: AMQP_USER
+        valueFrom:
+          secretKeyRef:
+            name: rabbitmq
+            key: RABBITMQ_DEFAULT_USER
+
+      - name: AMQP_PASS
+        valueFrom:
+          secretKeyRef:
+            name: rabbitmq
+            key: RABBITMQ_DEFAULT_PASS
+
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8426
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        failureThreshold: 3
+        
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8426
+        initialDelaySeconds: 15
+        periodSeconds: 20
+        failureThreshold: 3
+
+
+service:
+  name: payment
+
+  type: ClusterIP
+
+  ports:
+  - name: payment
+    port: 8426
+    targetPort: 8426
