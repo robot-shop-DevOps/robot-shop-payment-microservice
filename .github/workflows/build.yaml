@@ -41,7 +41,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          source venv/bin/activate
+          source ../venv/bin/activate
           mkdir -p test-results
           pytest -v --junitxml=test-results/junit.xml
         working-directory: ./payment
