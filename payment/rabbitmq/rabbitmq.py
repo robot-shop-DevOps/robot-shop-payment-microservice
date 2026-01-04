@@ -1,58 +1,111 @@
 import json
 import pika
-import os
+
 
 class Publisher:
     def __init__(self, host, user, password, logger):
-        self.HOST = host
-        self.USER = user
-        self.password = password
-        self.VIRTUAL_HOST = '/'
-        self.EXCHANGE='robot-shop'
-        self.TYPE='direct'
-        self.ROUTING_KEY = 'orders'
-        self._logger = logger
-        self._params = pika.connection.ConnectionParameters(
-            host=self.HOST,
-            virtual_host=self.VIRTUAL_HOST,
-            credentials=pika.credentials.PlainCredentials(self.USER, self.password))
-        self._conn = None
+        self.HOST          = host
+        self.USER          = user
+        self.password      = password
+        self.VIRTUAL_HOST  = "/"
+        self.EXCHANGE      = "robot-shop"
+        self.TYPE          = "direct"
+        self.ROUTING_KEY   = "orders"
+
+        self._logger  = logger
+        self._conn    = None
         self._channel = None
 
+        self._params = pika.ConnectionParameters(
+            host=self.HOST,
+            virtual_host=self.VIRTUAL_HOST,
+            credentials=pika.PlainCredentials(self.USER, self.password),
+        )
+
     def _connect(self):
-        if not self._conn or self._conn.is_closed or self._channel is None or self._channel.is_closed:
+        try:
             self._conn = pika.BlockingConnection(self._params)
             self._channel = self._conn.channel()
-            self._channel.exchange_declare(exchange=self.EXCHANGE, exchange_type=self.TYPE, durable=True)
-            self._logger.info('connected to broker')
+            self._channel.exchange_declare(
+                exchange=self.EXCHANGE,
+                exchange_type=self.TYPE,
+                durable=True,
+            )
+        except Exception as e:
+            self._logger.error(
+                "failed to connect to rabbitmq",
+                extra={
+                    "dependency": "rabbitmq",
+                    "error_type": "DEPENDENCY_DOWN",
+                    "exception": e.__class__.__name__,
+                    "message": str(e),
+                },
+            )
+            raise
 
     def _publish(self, msg, headers):
-        self._channel.basic_publish(exchange=self.EXCHANGE,
-                                    routing_key=self.ROUTING_KEY,
-                                    properties=pika.BasicProperties(headers=headers),
-                                    body=json.dumps(msg).encode())
-        self._logger.info('message sent')
+        self._channel.basic_publish(
+            exchange=self.EXCHANGE,
+            routing_key=self.ROUTING_KEY,
+            properties=pika.BasicProperties(headers=headers),
+            body=json.dumps(msg).encode(),
+        )
+
+    def publish(self, msg, headers):
+        try:
+            if (
+                self._conn is None
+                or self._conn.is_closed
+                or self._channel is None
+                or self._channel.is_closed
+            ):
+                self._connect()
+
+            self._publish(msg, headers)
+
+        except (
+            pika.exceptions.ConnectionClosed,
+            pika.exceptions.StreamLostError,
+            pika.exceptions.AMQPConnectionError,
+        ) as e:
+            self._logger.warning(
+                "rabbitmq connection lost, reconnecting",
+                extra={
+                    "dependency": "rabbitmq",
+                    "error_type": "RECONNECTING",
+                    "exception": e.__class__.__name__,
+                },
+            )
+
+            self._connect()
+            self._publish(msg, headers)
+
+        except Exception as e:
+            self._logger.error(
+                "failed to publish message",
+                extra={
+                    "dependency": "rabbitmq",
+                    "error_type": "PUBLISH_FAILED",
+                    "exception": e.__class__.__name__,
+                    "message": str(e),
+                },
+            )
+            raise
 
     def check_connection(self):
         try:
             conn = pika.BlockingConnection(self._params)
             conn.close()
             return "OK", True
-        except Exception as e:
-            return f"RabbitMQ unreachable: {e}", False
-            
-    #Publish msg, reconnecting if necessary.
-    def publish(self, msg, headers):
-        if self._channel is None or self._channel.is_closed or self._conn is None or self._conn.is_closed:
-            self._connect()
-        try:
-            self._publish(msg, headers)
-        except (pika.exceptions.ConnectionClosed, pika.exceptions.StreamLostError):
-            self._logger.info('reconnecting to queue')
-            self._connect()
-            self._publish(msg, headers)
 
-    def close(self):
-        if self._conn and self._conn.is_open:
-            self._logger.info('closing queue connection')
-            self._conn.close()
+        except Exception as e:
+            self._logger.error(
+                "rabbitmq health check failed",
+                extra={
+                    "dependency": "rabbitmq",
+                    "error_type": "DEPENDENCY_DOWN",
+                    "exception": e.__class__.__name__,
+                    "message": str(e),
+                },
+            )
+            return "RabbitMQ unreachable", False

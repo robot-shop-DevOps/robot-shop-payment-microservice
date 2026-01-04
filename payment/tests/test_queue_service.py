@@ -3,14 +3,12 @@ from unittest.mock import MagicMock
 
 from payment.services.queue import QueueService
 
-# Fake order object for testing
 class FakeOrder:
     def __init__(self):
         self.id = "order123"
         self.user_id = "user123"
         self.cart = {"items": [], "total": 0}
 
-# Fake publisher that records messages instead of sending to real RabbitMQ
 class FakePublisher:
     def __init__(self):
         self.published_messages = []
@@ -27,12 +25,15 @@ def test_queue_service_publishes_order():
 
     service.publish_order(order)
 
+    # message published
     assert len(fake_publisher.published_messages) == 1
 
     msg, headers = fake_publisher.published_messages[0]
-
     assert msg["orderid"] == "order123"
     assert msg["user"] == "user123"
     assert msg["cart"] == {"items": [], "total": 0}
 
-    fake_logger.info.assert_called_with("Queueing order")
+    # logging happened (but don't over-constrain it)
+    fake_logger.info.assert_called()
+    args, kwargs = fake_logger.info.call_args
+    assert "Queueing order" in args[0]

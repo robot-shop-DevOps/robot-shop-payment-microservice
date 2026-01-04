@@ -1,29 +1,36 @@
 import logging
+import json
 import sys
+from datetime import datetime, timezone
 
-class Logger:
-    def __init__(self, name="payment_service", level=logging.INFO):
-        self.name = name
-        self.level = level
-        self.logger = None
 
-    def create_logger(self):
-        if self.logger:
-            return self.logger  # reuse if already created
+class JsonFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        log = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "message": record.getMessage(),
+            "service": record.name,
+        }
 
-        logger = logging.getLogger(self.name)
-        logger.setLevel(self.level)
+        if hasattr(record, "extra") and isinstance(record.extra, dict):
+            log.update(record.extra)
 
-        # Prevent duplicate handlers if called multiple times
-        if not logger.handlers:
-            handler = logging.StreamHandler(sys.stdout)
-            handler.setFormatter(self._get_formatter())
-            logger.addHandler(handler)
+        return json.dumps(log)
 
-        self.logger = logger
+
+def get_logger(name: str = "payment", level: int = logging.INFO) -> logging.Logger:
+    logger = logging.getLogger(name)
+
+    if logger.handlers:
         return logger
 
-    def _get_formatter(self):
-        return logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
+    logger.setLevel(level)
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(JsonFormatter())
+
+    logger.addHandler(handler)
+    logger.propagate = False
+
+    return logger
