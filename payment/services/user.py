@@ -29,7 +29,6 @@ class UserService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "user service unreachable",
-                str(e),
                 extra={
                     "dependency": "user",
                     "error_type": "DEPENDENCY_DOWN",
@@ -51,7 +50,6 @@ class UserService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "user service error during lookup",
-                str(e),
                 extra={
                     "dependency": "user",
                     "error_type": "DEPENDENCY_DOWN",
@@ -86,7 +84,6 @@ class UserService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "user service error during order record",
-                str(e),
                 extra={
                     "dependency": "user",
                     "error_type": "DEPENDENCY_DOWN",

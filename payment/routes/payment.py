@@ -16,7 +16,6 @@ def init_routes(payment_service):
         except ValueError as e:
             logger.warning(
                 "payment validation failed",
-                str(e),
                 extra={
                     "service": "payment",
                     "error_type": "INVALID_PAYMENT_REQUEST",
@@ -29,7 +28,6 @@ def init_routes(payment_service):
         except Exception as e:
             logger.error(
                 "payment processing failed",
-                str(e),
                 extra={
                     "service": "payment",
                     "error_type": "PAYMENT_FAILED",

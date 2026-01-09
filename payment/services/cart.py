@@ -28,7 +28,6 @@ class CartService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "cart service unreachable",
-                str(e),
                 extra={
                     "dependency": "cart",
                     "error_type": "DEPENDENCY_DOWN",
@@ -61,7 +60,6 @@ class CartService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "cart service error during delete",
-                str(e),
                 extra={
                     "dependency": "cart",
                     "error_type": "DEPENDENCY_DOWN",
