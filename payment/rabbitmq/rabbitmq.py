@@ -34,7 +34,6 @@ class Publisher:
         except Exception as e:
             self._logger.error(
                 "failed to connect to rabbitmq",
-                str(e),
                 extra={
                     "dependency": "rabbitmq",
                     "error_type": "DEPENDENCY_DOWN",
@@ -83,7 +82,6 @@ class Publisher:
         except Exception as e:
             self._logger.error(
                 "failed to publish message",
-                str(e),
                 extra={
                     "dependency": "rabbitmq",
                     "error_type": "PUBLISH_FAILED",
@@ -101,7 +99,6 @@ class Publisher:
         except Exception as e:
             self._logger.error(
                 "rabbitmq health check failed",
-                str(e),
                 extra={
                     "dependency": "rabbitmq",
                     "error_type": "DEPENDENCY_DOWN",
