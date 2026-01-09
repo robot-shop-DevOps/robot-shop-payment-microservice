@@ -28,11 +28,11 @@ class CartService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "cart service unreachable",
+                str(e),
                 extra={
                     "dependency": "cart",
                     "error_type": "DEPENDENCY_DOWN",
-                    "exception": e.__class__.__name__,
-                    "message": str(e),
+                    "exception": e.__class__.__name__
                 },
             )
             return "Cart microservice unreachable", 503
@@ -61,12 +61,12 @@ class CartService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "cart service error during delete",
+                str(e),
                 extra={
                     "dependency": "cart",
                     "error_type": "DEPENDENCY_DOWN",
                     "user_id": user_id,
-                    "exception": e.__class__.__name__,
-                    "message": str(e),
+                    "exception": e.__class__.__name__
                 },
             )
             raise

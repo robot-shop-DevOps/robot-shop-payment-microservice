@@ -33,14 +33,14 @@ class PaymentService:
 
         except requests.exceptions.RequestException as e:
             self.logger.error(
-                "payment gateway unreachable",
+                "payment gateway unreachable", 
+                str(e),
                 extra={
                     "service": "payment",
                     "dependency": "payment_gateway",
                     "error_type": "DEPENDENCY_DOWN",
                     "user_id": user_id,
-                    "exception": e.__class__.__name__,
-                    "message": str(e),
+                    "exception": e.__class__.__name__
                 },
             )
             raise Exception("Payment gateway error")

@@ -99,9 +99,7 @@ def handle_exception(e):
         "unhandled application exception",
         extra={
             "error_type": "UNHANDLED_EXCEPTION",
-            "exception": e.__class__.__name__,
-            "message": str(e),
-            "trace": traceback.format_exc(),
+            "exception": e.__class__.__name__
         },
     )
     return Response("Internal Server Error", status=500)
