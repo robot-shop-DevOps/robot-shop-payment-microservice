@@ -26,12 +26,12 @@ class QueueService:
         except Exception as e:
             self.logger.error(
                 "failed to publish order to queue",
+                str(e),
                 extra={
                     "dependency": "rabbitmq",
                     "error_type": "QUEUE_PUBLISH_FAILED",
                     "order_id": order.id,
-                    "exception": e.__class__.__name__,
-                    "message": str(e),
+                    "exception": e.__class__.__name__
                 },
             )
             raise

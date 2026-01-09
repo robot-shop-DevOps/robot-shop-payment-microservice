@@ -29,11 +29,11 @@ class UserService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "user service unreachable",
+                str(e),
                 extra={
                     "dependency": "user",
                     "error_type": "DEPENDENCY_DOWN",
-                    "exception": e.__class__.__name__,
-                    "message": str(e),
+                    "exception": e.__class__.__name__
                 },
             )
             return "User microservice unreachable", 503
@@ -51,12 +51,12 @@ class UserService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "user service error during lookup",
+                str(e),
                 extra={
                     "dependency": "user",
                     "error_type": "DEPENDENCY_DOWN",
                     "user_id": user_id,
                     "exception": e.__class__.__name__,
-                    "message": str(e),
                 },
             )
             return False
@@ -86,13 +86,13 @@ class UserService:
         except requests.exceptions.RequestException as e:
             self.logger.error(
                 "user service error during order record",
+                str(e),
                 extra={
                     "dependency": "user",
                     "error_type": "DEPENDENCY_DOWN",
                     "user_id": user_id,
                     "order_id": order.id,
-                    "exception": e.__class__.__name__,
-                    "message": str(e),
+                    "exception": e.__class__.__name__
                 },
             )
             raise
